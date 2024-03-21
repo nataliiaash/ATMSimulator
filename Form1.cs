@@ -26,6 +26,7 @@ namespace ATMSimulator
         {
             InitializeComponent();
         }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             this.BackColor = Color.AliceBlue;
@@ -35,6 +36,89 @@ namespace ATMSimulator
             displayLogInWindow();
 
         }
+
+        private object balanceLock = new object();
+
+        private void TestRaceCondition()
+        {
+            // Assuming ActiveAccount is not null
+            if (ActiveAccount != null)
+            {
+                // Create two threads that attempt to decrement the balance concurrently without synchronization
+                Thread t1 = new Thread(() =>
+                {
+                    ActiveAccount.decrementBalance(50);
+                });
+
+                Thread t2 = new Thread(() =>
+                {
+                    ActiveAccount.decrementBalance(50);
+                });
+
+                // Start the threads
+                t1.Start();
+                t2.Start();
+
+                // Wait for the threads to finish
+                t1.Join();
+                t2.Join();
+
+                // Display the updated balance
+                MessageBox.Show("Balance after race condition: £" + ActiveAccount.getBalance(), "Race Condition Test Result");
+            }
+            else
+            {
+                MessageBox.Show("No active account. Please log in first.", "Error");
+            }
+        }
+
+        // Function that uses multiple threads to attempt to decrement the balance of an account concurrently with synchronization
+        private void RaceCondition()
+        {
+            Account acc = new Account(100, 1234, 123456);
+            Thread t1 = new Thread(() =>
+            {
+                lock (balanceLock)
+                {
+                    acc.decrementBalance(50);
+                }
+            });
+            Thread t2 = new Thread(() =>
+            {
+                lock (balanceLock)
+                {
+                    acc.decrementBalance(50);
+                }
+            });
+            t1.Start();
+            t2.Start();
+            t1.Join();
+            t2.Join();
+            Console.WriteLine(acc.getBalance());
+        }
+
+        private void AddTestRaceConditionButton()
+        {
+            Button testRaceConditionButton = new Button();
+            testRaceConditionButton.Location = new Point(200, 500);
+            testRaceConditionButton.Size = new Size(150, 50);
+            testRaceConditionButton.Text = "Test Race Condition";
+            testRaceConditionButton.BackColor = Color.Red;
+            testRaceConditionButton.Click += new EventHandler(this.TestRaceConditionButton_Click);
+            Controls.Add(testRaceConditionButton);
+        }
+
+        private void TestRaceConditionButton_Click(object sender, EventArgs e)
+        {
+            // Call the method to test the race condition
+            TestRaceCondition();
+
+            // Display the balance after the race condition
+            // Assuming you have access to the active account
+            MessageBox.Show("Balance after race condition: £" + ActiveAccount.getBalance(), "Race Condition Test Result");
+        }
+
+        
 
         private void displayLogInWindow()
         {
@@ -171,6 +255,10 @@ namespace ATMSimulator
         {
             lastClickedTextBox = sender as TextBox;
         }
+        private void AddButtonsToTestRaceCondition()
+        {
+            AddTestRaceConditionButton();
+        }
 
         void LogIn_Click(object sender, EventArgs e)
        {
@@ -198,6 +286,8 @@ namespace ATMSimulator
 
 
         }
+
+
         private void button1_Click(object sender, EventArgs e)
        {
             if (lastClickedTextBox == accountNumberField)
@@ -335,6 +425,7 @@ namespace ATMSimulator
             if (lastClickedTextBox == accountNumberField)
             {
                 lastClickedTextBox = pinField;
+                LogIn_Click(sender, e);
             }
         }
         private void buttonClear_Click(object sender, EventArgs e)
@@ -362,6 +453,8 @@ namespace ATMSimulator
             takeOutCashButton.BackColor = Color.Aqua;
             takeOutCashButton.Click += new EventHandler(takeOutCash_Click);
             Controls.Add(takeOutCashButton);
+
+            AddButtonsToTestRaceCondition();
 
             Button viewBalanceButton = new Button();
             viewBalanceButton.Location = new Point(200, 250);
@@ -468,11 +561,11 @@ namespace ATMSimulator
             displayLogInWindow();
         }
 
+        private void button2_Click_1(object sender, EventArgs e)
+        {
 
-
-
+        }
     }
-
 
     class ATM
     {
@@ -480,6 +573,8 @@ namespace ATMSimulator
         private Thread thread;
         //local referance to the array of accounts
         private Account[] ac;
+
+        private object balanceLock = new object();
 
         //this is a referance to the account that is being used
         private Account activeAccount = null;
@@ -541,6 +636,19 @@ namespace ATMSimulator
             }
 
             return null;
+        }
+
+        public void withoutSynchronization(int amount)
+        {
+            activeAccount.decrementBalance(amount);
+        }
+
+        public void withSynchronization(int amount)
+        {
+            lock (balanceLock)
+            {
+                activeAccount.decrementBalance(amount);
+            }
         }
         /*
          * 
@@ -678,6 +786,8 @@ namespace ATMSimulator
 
     }
 
+    // write a function that uses multiple threads to attempt to decrement the balance of an account concurrently without synchronization, cause race condition
+
     /*
      *   The Account class encapusulates all features of a simple bank account
      */
@@ -719,6 +829,8 @@ namespace ATMSimulator
         {
             if (this.balance > amount)
             {
+                Thread.Sleep(1500);
+
                 balance -= amount;
                 return true;
             }
