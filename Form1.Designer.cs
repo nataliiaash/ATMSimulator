@@ -1,4 +1,4 @@
-﻿namespace ATMSimulator
+namespace ATMSimulator
 {
 
     partial class Form1
@@ -27,12 +27,13 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent(Account activeAccount)
+        private void InitializeComponent(Account ActiveAccount)
         {
             this.SuspendLayout();
             // 
             // Form1
             // 
+            this.ActiveAccount = ActiveAccount;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
