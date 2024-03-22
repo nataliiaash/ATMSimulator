@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,16 +11,16 @@ namespace ATMSimulator
         TextBox accountNumberField;
         TextBox pinField;
         string currentPin = "";
-        private static Account[] ac = new Account[3];
-        private Account ActiveAccount = null;
-        private ATM atm = new ATM(ac);
+        readonly private static Account[] ac = new Account[3];
+        private Account ActiveAccount;
+        readonly private ATM atm = new ATM(ac);
         private TextBox lastClickedTextBox;
-        private object balanceLock = new object();
         public bool useRaceCondition = false;
-        private Button toggleButton;
+
         public Form1(Account ActiveAccount)
         {
             InitializeComponent(ActiveAccount);
+            this.ActiveAccount = ActiveAccount;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -161,8 +161,6 @@ namespace ATMSimulator
                 buttonClear.BackColor = Color.Yellow;
                 buttonClear.Click += new EventHandler(this.buttonClear_Click);
                 Controls.Add(buttonClear);
-            
-            
         }
 
         private void lastTextBox_Click(object sender, MouseEventArgs e)
@@ -379,6 +377,12 @@ namespace ATMSimulator
             LogOutButton.Click += new EventHandler(this.LogOutButton_Click);
             Controls.Add(LogOutButton);
 
+            System.Windows.Forms.Label conditionLabel = new System.Windows.Forms.Label();
+            conditionLabel.Location = new Point(50, 400);
+            conditionLabel.Size = new Size(150, 50);
+            conditionLabel.Text = "Red: Data Race Condition\nGreen: Non-Race Condition";
+            Controls.Add(conditionLabel);
+
             // Toggle button for Race and Non-Race condition
             Button toggleButton = new Button();
             toggleButton.Location = new Point(200, 400);
@@ -403,22 +407,24 @@ namespace ATMSimulator
             InitializeATMInstances();
         }
 
-        private void ToggleCondition_Click(object sender, EventArgs e)
+       private void ToggleCondition_Click(object sender, EventArgs e)
         {
             // Toggle the useRaceCondition flag
             useRaceCondition = !useRaceCondition;
 
-            // Change the button color based on the current condition
+            // Change the button color and text based on the current condition
             Button toggleButton = (Button)sender;
             if (useRaceCondition)
             {
                 // Set to Race Condition (Red)
                 toggleButton.BackColor = Color.Red;
+                toggleButton.Text = "Race Condition";
             }
             else
             {
                 // Set to Non-Race Condition (Green)
                 toggleButton.BackColor = Color.Green;
+                toggleButton.Text = "Non-Race Condition";
             }
         }
 
@@ -553,12 +559,12 @@ namespace ATMSimulator
     {
 
         //local referance to the array of accounts
-        private Account[] ac;
+        readonly private Account[] ac;
         readonly private object balanceLock = new object();
         readonly private bool  useRaceCondition = false;
 
         //this is a referance to the account that is being used
-        private Account ActiveAccount = null;
+        readonly private Account ActiveAccount;
 
         // the atm constructor takes an array of account objects as a referance
         public ATM(Account[] ac)
@@ -687,10 +693,8 @@ namespace ATMSimulator
         readonly private int pin;
         readonly private int accountNum;
         readonly private object balanceLock = new object();
-        private Account ActiveAccount = null;
         private static Semaphore balanceSemaphore;
         
-
         // a constructor that takes initial values for each of the attributes (balance, pin, accountNumber)
         public Account(int balance, int pin, int accountNum)
         {
@@ -817,4 +821,3 @@ namespace ATMSimulator
 
     }
 }
-
