@@ -98,5 +98,16 @@
   <ItemGroup>
     <None Include="Resources\360_F_60541009_lgEIUEPoTAe6JGcUTMdg4PaBm7KweKYG.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\ATM_Keypad.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Login_bg.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\withdrawal.PNG">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
